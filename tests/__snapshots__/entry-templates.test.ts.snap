@@ -1697,6 +1697,34 @@ async function _handleRequest(request, __reqCtx, _mwCtx) {
 
   // Handle metadata routes (sitemap.xml, robots.txt, manifest.webmanifest, etc.)
   for (const metaRoute of metadataRoutes) {
+    // generateSitemaps() support — paginated sitemaps at /{prefix}/sitemap/{id}.xml
+    // When a sitemap module exports generateSitemaps, the base URL (e.g. /products/sitemap.xml)
+    // is no longer served. Instead, individual sitemaps are served at /products/sitemap/{id}.xml.
+    if (
+      metaRoute.type === "sitemap" &&
+      metaRoute.isDynamic &&
+      typeof metaRoute.module.generateSitemaps === "function"
+    ) {
+      const sitemapPrefix = metaRoute.servedUrl.slice(0, -4); // strip ".xml"
+      // Match exactly /{prefix}/{id}.xml — one segment only (no slashes in id)
+      if (cleanPathname.startsWith(sitemapPrefix + "/") && cleanPathname.endsWith(".xml")) {
+        const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+        if (rawId.includes("/")) continue; // multi-segment — not a paginated sitemap
+        const sitemaps = await metaRoute.module.generateSitemaps();
+        const matched = sitemaps.find(function(s) { return String(s.id) === rawId; });
+        if (!matched) return new Response("Not Found", { status: 404 });
+        // Pass the original typed id from generateSitemaps() so numeric IDs stay numeric.
+        // TODO: wrap with makeThenableParams-style Promise when upgrading to Next.js 16
+        // full-Promise param semantics (id becomes Promise<string> in v16).
+        const result = await metaRoute.module.default({ id: matched.id });
+        if (result instanceof Response) return result;
+        return new Response(sitemapToXml(result), {
+          headers: { "Content-Type": metaRoute.contentType },
+        });
+      }
+      // Skip — the base servedUrl is not served when generateSitemaps exists
+      continue;
+    }
     if (cleanPathname === metaRoute.servedUrl) {
       if (metaRoute.isDynamic) {
         // Dynamic metadata route — call the default export and serialize
@@ -4001,6 +4029,34 @@ async function _handleRequest(request, __reqCtx, _mwCtx) {
 
   // Handle metadata routes (sitemap.xml, robots.txt, manifest.webmanifest, etc.)
   for (const metaRoute of metadataRoutes) {
+    // generateSitemaps() support — paginated sitemaps at /{prefix}/sitemap/{id}.xml
+    // When a sitemap module exports generateSitemaps, the base URL (e.g. /products/sitemap.xml)
+    // is no longer served. Instead, individual sitemaps are served at /products/sitemap/{id}.xml.
+    if (
+      metaRoute.type === "sitemap" &&
+      metaRoute.isDynamic &&
+      typeof metaRoute.module.generateSitemaps === "function"
+    ) {
+      const sitemapPrefix = metaRoute.servedUrl.slice(0, -4); // strip ".xml"
+      // Match exactly /{prefix}/{id}.xml — one segment only (no slashes in id)
+      if (cleanPathname.startsWith(sitemapPrefix + "/") && cleanPathname.endsWith(".xml")) {
+        const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+        if (rawId.includes("/")) continue; // multi-segment — not a paginated sitemap
+        const sitemaps = await metaRoute.module.generateSitemaps();
+        const matched = sitemaps.find(function(s) { return String(s.id) === rawId; });
+        if (!matched) return new Response("Not Found", { status: 404 });
+        // Pass the original typed id from generateSitemaps() so numeric IDs stay numeric.
+        // TODO: wrap with makeThenableParams-style Promise when upgrading to Next.js 16
+        // full-Promise param semantics (id becomes Promise<string> in v16).
+        const result = await metaRoute.module.default({ id: matched.id });
+        if (result instanceof Response) return result;
+        return new Response(sitemapToXml(result), {
+          headers: { "Content-Type": metaRoute.contentType },
+        });
+      }
+      // Skip — the base servedUrl is not served when generateSitemaps exists
+      continue;
+    }
     if (cleanPathname === metaRoute.servedUrl) {
       if (metaRoute.isDynamic) {
         // Dynamic metadata route — call the default export and serialize
@@ -6332,6 +6388,34 @@ async function _handleRequest(request, __reqCtx, _mwCtx) {
 
   // Handle metadata routes (sitemap.xml, robots.txt, manifest.webmanifest, etc.)
   for (const metaRoute of metadataRoutes) {
+    // generateSitemaps() support — paginated sitemaps at /{prefix}/sitemap/{id}.xml
+    // When a sitemap module exports generateSitemaps, the base URL (e.g. /products/sitemap.xml)
+    // is no longer served. Instead, individual sitemaps are served at /products/sitemap/{id}.xml.
+    if (
+      metaRoute.type === "sitemap" &&
+      metaRoute.isDynamic &&
+      typeof metaRoute.module.generateSitemaps === "function"
+    ) {
+      const sitemapPrefix = metaRoute.servedUrl.slice(0, -4); // strip ".xml"
+      // Match exactly /{prefix}/{id}.xml — one segment only (no slashes in id)
+      if (cleanPathname.startsWith(sitemapPrefix + "/") && cleanPathname.endsWith(".xml")) {
+        const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+        if (rawId.includes("/")) continue; // multi-segment — not a paginated sitemap
+        const sitemaps = await metaRoute.module.generateSitemaps();
+        const matched = sitemaps.find(function(s) { return String(s.id) === rawId; });
+        if (!matched) return new Response("Not Found", { status: 404 });
+        // Pass the original typed id from generateSitemaps() so numeric IDs stay numeric.
+        // TODO: wrap with makeThenableParams-style Promise when upgrading to Next.js 16
+        // full-Promise param semantics (id becomes Promise<string> in v16).
+        const result = await metaRoute.module.default({ id: matched.id });
+        if (result instanceof Response) return result;
+        return new Response(sitemapToXml(result), {
+          headers: { "Content-Type": metaRoute.contentType },
+        });
+      }
+      // Skip — the base servedUrl is not served when generateSitemaps exists
+      continue;
+    }
     if (cleanPathname === metaRoute.servedUrl) {
       if (metaRoute.isDynamic) {
         // Dynamic metadata route — call the default export and serialize
@@ -8673,6 +8757,34 @@ async function _handleRequest(request, __reqCtx, _mwCtx) {
 
   // Handle metadata routes (sitemap.xml, robots.txt, manifest.webmanifest, etc.)
   for (const metaRoute of metadataRoutes) {
+    // generateSitemaps() support — paginated sitemaps at /{prefix}/sitemap/{id}.xml
+    // When a sitemap module exports generateSitemaps, the base URL (e.g. /products/sitemap.xml)
+    // is no longer served. Instead, individual sitemaps are served at /products/sitemap/{id}.xml.
+    if (
+      metaRoute.type === "sitemap" &&
+      metaRoute.isDynamic &&
+      typeof metaRoute.module.generateSitemaps === "function"
+    ) {
+      const sitemapPrefix = metaRoute.servedUrl.slice(0, -4); // strip ".xml"
+      // Match exactly /{prefix}/{id}.xml — one segment only (no slashes in id)
+      if (cleanPathname.startsWith(sitemapPrefix + "/") && cleanPathname.endsWith(".xml")) {
+        const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+        if (rawId.includes("/")) continue; // multi-segment — not a paginated sitemap
+        const sitemaps = await metaRoute.module.generateSitemaps();
+        const matched = sitemaps.find(function(s) { return String(s.id) === rawId; });
+        if (!matched) return new Response("Not Found", { status: 404 });
+        // Pass the original typed id from generateSitemaps() so numeric IDs stay numeric.
+        // TODO: wrap with makeThenableParams-style Promise when upgrading to Next.js 16
+        // full-Promise param semantics (id becomes Promise<string> in v16).
+        const result = await metaRoute.module.default({ id: matched.id });
+        if (result instanceof Response) return result;
+        return new Response(sitemapToXml(result), {
+          headers: { "Content-Type": metaRoute.contentType },
+        });
+      }
+      // Skip — the base servedUrl is not served when generateSitemaps exists
+      continue;
+    }
     if (cleanPathname === metaRoute.servedUrl) {
       if (metaRoute.isDynamic) {
         // Dynamic metadata route — call the default export and serialize
@@ -10981,6 +11093,34 @@ async function _handleRequest(request, __reqCtx, _mwCtx) {
 
   // Handle metadata routes (sitemap.xml, robots.txt, manifest.webmanifest, etc.)
   for (const metaRoute of metadataRoutes) {
+    // generateSitemaps() support — paginated sitemaps at /{prefix}/sitemap/{id}.xml
+    // When a sitemap module exports generateSitemaps, the base URL (e.g. /products/sitemap.xml)
+    // is no longer served. Instead, individual sitemaps are served at /products/sitemap/{id}.xml.
+    if (
+      metaRoute.type === "sitemap" &&
+      metaRoute.isDynamic &&
+      typeof metaRoute.module.generateSitemaps === "function"
+    ) {
+      const sitemapPrefix = metaRoute.servedUrl.slice(0, -4); // strip ".xml"
+      // Match exactly /{prefix}/{id}.xml — one segment only (no slashes in id)
+      if (cleanPathname.startsWith(sitemapPrefix + "/") && cleanPathname.endsWith(".xml")) {
+        const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+        if (rawId.includes("/")) continue; // multi-segment — not a paginated sitemap
+        const sitemaps = await metaRoute.module.generateSitemaps();
+        const matched = sitemaps.find(function(s) { return String(s.id) === rawId; });
+        if (!matched) return new Response("Not Found", { status: 404 });
+        // Pass the original typed id from generateSitemaps() so numeric IDs stay numeric.
+        // TODO: wrap with makeThenableParams-style Promise when upgrading to Next.js 16
+        // full-Promise param semantics (id becomes Promise<string> in v16).
+        const result = await metaRoute.module.default({ id: matched.id });
+        if (result instanceof Response) return result;
+        return new Response(sitemapToXml(result), {
+          headers: { "Content-Type": metaRoute.contentType },
+        });
+      }
+      // Skip — the base servedUrl is not served when generateSitemaps exists
+      continue;
+    }
     if (cleanPathname === metaRoute.servedUrl) {
       if (metaRoute.isDynamic) {
         // Dynamic metadata route — call the default export and serialize
@@ -13404,6 +13544,34 @@ async function _handleRequest(request, __reqCtx, _mwCtx) {
 
   // Handle metadata routes (sitemap.xml, robots.txt, manifest.webmanifest, etc.)
   for (const metaRoute of metadataRoutes) {
+    // generateSitemaps() support — paginated sitemaps at /{prefix}/sitemap/{id}.xml
+    // When a sitemap module exports generateSitemaps, the base URL (e.g. /products/sitemap.xml)
+    // is no longer served. Instead, individual sitemaps are served at /products/sitemap/{id}.xml.
+    if (
+      metaRoute.type === "sitemap" &&
+      metaRoute.isDynamic &&
+      typeof metaRoute.module.generateSitemaps === "function"
+    ) {
+      const sitemapPrefix = metaRoute.servedUrl.slice(0, -4); // strip ".xml"
+      // Match exactly /{prefix}/{id}.xml — one segment only (no slashes in id)
+      if (cleanPathname.startsWith(sitemapPrefix + "/") && cleanPathname.endsWith(".xml")) {
+        const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+        if (rawId.includes("/")) continue; // multi-segment — not a paginated sitemap
+        const sitemaps = await metaRoute.module.generateSitemaps();
+        const matched = sitemaps.find(function(s) { return String(s.id) === rawId; });
+        if (!matched) return new Response("Not Found", { status: 404 });
+        // Pass the original typed id from generateSitemaps() so numeric IDs stay numeric.
+        // TODO: wrap with makeThenableParams-style Promise when upgrading to Next.js 16
+        // full-Promise param semantics (id becomes Promise<string> in v16).
+        const result = await metaRoute.module.default({ id: matched.id });
+        if (result instanceof Response) return result;
+        return new Response(sitemapToXml(result), {
+          headers: { "Content-Type": metaRoute.contentType },
+        });
+      }
+      // Skip — the base servedUrl is not served when generateSitemaps exists
+      continue;
+    }
     if (cleanPathname === metaRoute.servedUrl) {
       if (metaRoute.isDynamic) {
         // Dynamic metadata route — call the default export and serialize
